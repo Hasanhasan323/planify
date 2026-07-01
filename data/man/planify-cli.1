@@ -6,7 +6,7 @@ planify-cli \- command-line interface for Planify task manager
 <command> [OPTIONS]
 .SH DESCRIPTION
 .B planify-cli
-is a command-line tool for managing tasks in Planify. It provides functionality to create, list, update tasks, and manage projects directly from the terminal.
+is a command-line tool for managing tasks in Planify. It provides functionality to create, list, update tasks, and manage projects directly from the terminal. It returns JSON output, making it ideal for scripting, voice assistants, and automation workflows.
 .SH COMMANDS
 .TP
 .B add
@@ -31,6 +31,12 @@ Update an existing task. Only provided fields will be changed.
 List all projects.
 .sp
 .B planify-cli list-projects
+.TP
+.B backup
+Export a JSON backup of all tasks, projects, sections, labels, and sources.
+.sp
+.B planify-cli backup
+[OPTIONS]
 .SH OPTIONS
 .SS Global Options
 .TP
@@ -117,6 +123,10 @@ Mark task as complete or incomplete
 .TP
 .B \-\-pin=true|false
 Pin or unpin the task
+.SS backup command options:
+.TP
+.B \-o, \-\-output=FILE
+Output file path (defaults to stdout)
 .SH EXAMPLES
 .TP
 .B 1. Get help for a specific command:
@@ -143,6 +153,37 @@ planify-cli update \-t TASK_ID \-P 2 \-\-complete=true
 .TP
 .B 7. List all projects:
 planify-cli list-projects
+.TP
+.B 8. Add a subtask using a parent ID:
+planify-cli add -c "Write unit tests" -p "Work" --parent-id "abc123"
+.TP
+.B 9. Complete a task:
+planify-cli update --task-id "abc123" --complete true
+.TP
+.B 10. Move a task to another project:
+planify-cli update --task-id "abc123" --project "Personal"
+.TP
+.B 11. Create a JSON backup of all data:
+planify-cli backup --output ~/backup.json
+.TP
+.B 12. Pipe backup output to jq for processing:
+planify-cli backup | jq '.items | length'
+.TP
+.B 13. Automated daily backup with cron (Flatpak installation):
+.br
+# Add to crontab: daily backup at 2am
+.br
+0 2 * * * flatpak run --command=io.github.alainm23.planify.cli io.github.alainm23.planify backup --output ~/backups/planify-$(date +\%Y\%m\%d).json
+.TP
+.B 14. Voice-to-task script example:
+.br
+#!/bin/bash
+.br
+# Record audio, transcribe with Whisper, add as task
+.br
+TASK=$(whisper --model tiny record.wav | tail -1)
+.br
+planify-cli add --content "$TASK"
 .SH NOTES
 • When both name and ID options are available (e.g., \-\-project and \-\-project-id), the ID option is preferred.
 .br
@@ -153,6 +194,12 @@ planify-cli list-projects
 • Date format must be YYYY-MM-DD for due dates.
 .br
 • Labels should be provided as a comma-separated list without spaces: label1,label2,label3.
+.br
+• All commands return JSON output, making it easy to pipe into tools like jq (e.g., planify-cli list-projects | jq '.[].name').
+.br
+• For Flatpak installations, you can create an alias for convenience:
+.br
+   alias planify-cli="flatpak run --command=io.github.alainm23.planify.cli io.github.alainm23.planify"
 .br
 • You can find the official CLI documentation on https://useplanify.com/cli
 .br
@@ -171,4 +218,4 @@ the Planify issue tracker.
 .SH AUTHOR
 Planify Development Team
 .SH COPYRIGHT
-Copyright © 2023-2026 Alain M. 
+Copyright © 2023-2026 Alain M.
